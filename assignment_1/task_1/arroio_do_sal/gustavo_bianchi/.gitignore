@@ -2,5 +2,3 @@
 .aws/ 
 __pycache__/
 *.venv
-
-load_data.py
