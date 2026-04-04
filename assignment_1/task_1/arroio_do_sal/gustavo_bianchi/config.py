@@ -13,7 +13,7 @@ class CFG:
     
     # Database & Data
     DB_NAME = 'classicmodels'
-    SQL_PATH = 'assigment_1/task_1/data/mysqlsampledatabase.sql'
+    SQL_PATH = 'assignment_1/task_1/data/mysqlsampledatabase.sql'
     
     # endpoint obtained after creating the instance
-    DB_HOST = "COLOQUE_O_ENDPOINT_AQUI"
+    DB_HOST = "classicmodels-instance.cswuziyho5un.us-east-1.rds.amazonaws.com"

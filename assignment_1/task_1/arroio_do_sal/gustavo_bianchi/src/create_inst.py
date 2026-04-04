@@ -38,8 +38,16 @@ def provision():
             PubliclyAccessible=True
         )
         print("Instância criada.")
+
     except Exception as e:
         print(f"Erro ao criar a instância: {e}")
+
+        # Para pegar o endpoint da instância
+        waiter = rds.get_waiter('db_instance_available')
+        waiter.wait(DBInstanceIdentifier=CFG.DB_ID)
+        response = rds.describe_db_instances(DBInstanceIdentifier=CFG.DB_ID)
+        endpoint = response['DBInstances'][0]['Endpoint']['Address']
+        print(f"Endpoint: {endpoint}")
 
 if __name__ == "__main__":
     provision()

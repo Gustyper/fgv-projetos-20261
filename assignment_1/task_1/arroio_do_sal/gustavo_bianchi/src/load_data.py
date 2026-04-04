@@ -9,7 +9,7 @@ from config import CFG
 def upload_data():
     try:
         conn = pymysql.connect(
-            host=CFG.DB_HOST, user=CFG.USER, password=CFG.PASS, autocommit=True
+            host=CFG.DB_HOST, user=CFG.DB_USER, password=CFG.DB_PASS, autocommit=True
         )
         cursor = conn.cursor()
 
@@ -21,7 +21,7 @@ def upload_data():
         print("Carregando dados...")
         with open(CFG.SQL_PATH, 'r', encoding='utf-8') as f:
             full_sql = f.read()
-            queries = full_sql.split(';') # usa ';' como split
+            queries = full_sql.split(';\n') # usa ';' como split
             
         for query in queries:
             if query.strip():
