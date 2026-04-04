@@ -39,6 +39,15 @@ def provision():
         )
         print("Instância criada.")
 
+        # Para pegar o endpoint da instância
+        waiter = rds.get_waiter('db_instance_available')
+        waiter.wait(DBInstanceIdentifier=CFG.DB_ID)
+        response = rds.describe_db_instances(DBInstanceIdentifier=CFG.DB_ID)
+        endpoint = response['DBInstances'][0]['Endpoint']['Address']
+        print(f"Endpoint: {endpoint}")
+
+        return endpoint
+
     except Exception as e:
         print(f"Erro ao criar a instância: {e}")
 
@@ -49,5 +58,25 @@ def provision():
         endpoint = response['DBInstances'][0]['Endpoint']['Address']
         print(f"Endpoint: {endpoint}")
 
+        return endpoint
+
+# Pra atualizar o CFG automaticamente
+def update_config_file(new_endpoint):
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(current_dir)
+    config_path = os.path.join(project_root, 'config.py')
+
+    with open(config_path, 'r') as f:
+        lines = f.readlines()
+    
+    with open(config_path, 'w') as f:
+        for line in lines:
+            if line.strip().startswith('DB_HOST ='):
+                f.write(f'    DB_HOST = "{new_endpoint}"\n')
+            else:
+                f.write(line)
+    print("Endpoint atualizado")
+
 if __name__ == "__main__":
-    provision()
+    endoint = provision()
+    update_config_file(endoint)
