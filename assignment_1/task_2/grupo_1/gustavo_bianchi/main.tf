@@ -3,6 +3,7 @@ provider "aws" {
 }
 
 # Data Sources
+#===========================================================================
 
 # busca o Security Group pelo nome
 data "aws_security_group" "rds_sg" {
@@ -28,32 +29,16 @@ data "aws_subnet" "first" {
 }
 
 # Resources ETL
+#===========================================================================
 
 resource "aws_s3_bucket" "datalake" {
   bucket = var.bucket_name
   force_destroy = true 
 }
 
-resource "aws_iam_role" "glue_role" {
-  name = "glue-etl-role"
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Action = "sts:AssumeRole"
-      Effect = "Allow"
-      Principal = { Service = "glue.amazonaws.com" }
-    }]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "glue_service" {
-  role = aws_iam_role.glue_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole"
-}
-
-resource "aws_iam_role_policy_attachment" "glue_s3" {
-  role = aws_iam_role.glue_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess" 
+# Busca a Role padrão fornecida pelo AWS Learner Lab
+data "aws_iam_role" "lab_role" {
+  name = "LabRole"
 }
 
 # Conexão do Glue usando os Data Sources para preencher a rede
@@ -72,23 +57,49 @@ resource "aws_glue_connection" "rds_conn" {
   }
 }
 
+
+# Automatization
+#===========================================================================
+
+# Faz o upload automático do script ETL local para o bucket S3
+resource "aws_s3_object" "etl_script_upload" {
+  bucket = aws_s3_bucket.datalake.bucket
+  key    = "scripts/etl_script.py"
+  source = "${path.module}/scripts/etl_script.py" # Caminho local do arquivo
+  etag   = filemd5("${path.module}/scripts/etl_script.py") # Força update se o arquivo mudar
+}
+
+# Atualização do Glue Job para referenciar o upload e passar parâmetros
 resource "aws_glue_job" "etl_job" {
-  name = "classicmodels-star-schema-job"
-  role_arn = aws_iam_role.glue_role.arn
+  name        = "classicmodels-star-schema-job"
+  role_arn = data.aws_iam_role.lab_role.arn
   connections = [aws_glue_connection.rds_conn.name]
 
   command {
-    name = "glueetl"
-    script_location = "s3://${aws_s3_bucket.datalake.bucket}/scripts/etl_script.py"
-    python_version = "3"
+    name            = "glueetl"
+    script_location = "s3://${aws_s3_bucket.datalake.bucket}/${aws_s3_object.etl_script_upload.key}"
+    python_version  = "3"
   }
 
   default_arguments = {
-    "--job-language" = "python"
-    "--TempDir" = "s3://${aws_s3_bucket.datalake.bucket}/temp/"
+    "--job-language"      = "python"
+    "--TempDir"           = "s3://${aws_s3_bucket.datalake.bucket}/temp/"
+    "--TARGET_BUCKET"     = aws_s3_bucket.datalake.bucket
+    "--CONNECTION_NAME"   = aws_glue_connection.rds_conn.name
   }
 
-  glue_version = "4.0"
-  worker_type = "G.1X"
+  glue_version      = "4.0"
+  worker_type       = "G.1X"
   number_of_workers = 2
+}
+
+# Regra de Ingress obrigatória para o AWS Glue (Self-Referencing)
+resource "aws_security_group_rule" "glue_self_referencing" {
+  type                     = "ingress"
+  from_port                = 0
+  to_port                  = 65535
+  protocol                 = "tcp"
+  security_group_id        = data.aws_security_group.rds_sg.id
+  source_security_group_id = data.aws_security_group.rds_sg.id
+  description              = "AWS Glue worker to worker communication"
 }
