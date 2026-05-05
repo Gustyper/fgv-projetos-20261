@@ -9,7 +9,10 @@ from config import CFG
 def upload_data():
     try:
         conn = pymysql.connect(
-            host=CFG.DB_HOST, user=CFG.DB_USER, password=CFG.DB_PASS, autocommit=True
+            host=CFG.get_db_host(), 
+            user=CFG.DB_USER, 
+            password=CFG.DB_PASS, 
+            autocommit=True
         )
         cursor = conn.cursor()
 
