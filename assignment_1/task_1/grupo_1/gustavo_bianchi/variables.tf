@@ -3,3 +3,6 @@ variable "db_password" {
   type        = string
   sensitive   = true  
 }
+
+# Para inciar o terraform corretamente, é necessário rodar no powershell:
+# $env:TF_VAR_db_password ="SENHA_AQUI"
