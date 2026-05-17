@@ -4,7 +4,7 @@ provider "aws" {
 
 # Lê o nome do bucket gerado na task 2
 data "local_file" "bucket_name" {
-  filename = "${path.module}/../../../task_2/bucket_name.txt"
+  filename = "${path.module}/../../../task_2/grupo_1/gustavo_bianchi/bucket_name.txt"
 }
 
 # Permissão educacional
