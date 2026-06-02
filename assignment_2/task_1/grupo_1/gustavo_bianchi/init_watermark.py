@@ -70,7 +70,7 @@ def initialize_metadata_table():
                 # Insere o registro de controle inicial
                 insert_query = """
                 INSERT INTO etl_watermark (pipeline_name, last_processed_order_date, last_run_at, last_run_status)
-                VALUES (%s, %s, NOW(), %s);
+                VALUES (%s, %s, UTC_TIMESTAMP(), %s);
                 """
                 cursor.execute(insert_query, ('classicmodels_sales', initial_watermark, 'NEVER_RUN'))
                 logging.info(f"Sucesso! Watermark configurada para a data histórica: {initial_watermark}")
