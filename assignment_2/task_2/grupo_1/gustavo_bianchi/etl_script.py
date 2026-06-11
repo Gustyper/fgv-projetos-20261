@@ -107,8 +107,8 @@ fact_df = fact_df.withColumn("order_date_key", date_format(col("orderDate"), "yy
 
 fact_orders = fact_df.select(
     col("orderNumber").alias("order_id"),
-    col("customerNumber").alias("customer_id"),
     col("productCode").alias("product_id"),
+    col("customerNumber").alias("customer_id"),
     col("order_date_key"),
     col("country_key"),
     col("quantityOrdered").alias("quantity_ordered"),
