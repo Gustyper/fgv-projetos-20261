@@ -171,7 +171,7 @@ resource "aws_glue_catalog_table" "fact_orders" {
     }
     columns {
       name = "country_key"
-      type = "string"
+      type = "bigint"
     }
     columns {
       name = "quantity_ordered"
