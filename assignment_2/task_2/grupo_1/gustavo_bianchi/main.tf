@@ -70,10 +70,11 @@ resource "aws_glue_job" "etl_job" {
   }
 
   default_arguments = {
-    "--job-language"    = "python"
-    "--TempDir"         = "s3://${aws_s3_bucket.datalake.bucket}/temp/"
-    "--TARGET_BUCKET"   = aws_s3_bucket.datalake.bucket
-    "--CONNECTION_NAME" = aws_glue_connection.rds_conn.name
+    "--job-language"             = "python"
+    "--TempDir"                  = "s3://${aws_s3_bucket.datalake.bucket}/temp/"
+    "--TARGET_BUCKET"            = aws_s3_bucket.datalake.bucket
+    "--CONNECTION_NAME"          = aws_glue_connection.rds_conn.name
+    "--additional-python-modules"= "pymysql"
   }
 
   glue_version      = "4.0"
