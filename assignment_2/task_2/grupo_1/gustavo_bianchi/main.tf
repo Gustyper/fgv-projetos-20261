@@ -99,41 +99,6 @@ resource "local_file" "bucket_name_export" {
 
 # --- EVENTBRIDGE (Agendamento) ---
 
-resource "aws_iam_role" "eventbridge_glue_role" {
-  name = "EventBridgeGlueRole-${random_id.bucket_suffix.hex}"
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "events.amazonaws.com"
-        }
-      }
-    ]
-  })
-}
-
-resource "aws_iam_policy" "eventbridge_glue_policy" {
-  name = "EventBridgeGluePolicy-${random_id.bucket_suffix.hex}"
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action   = "glue:StartJobRun"
-        Effect   = "Allow"
-        Resource = aws_glue_job.etl_job.arn
-      }
-    ]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "eventbridge_glue_attach" {
-  role       = aws_iam_role.eventbridge_glue_role.name
-  policy_arn = aws_iam_policy.eventbridge_glue_policy.arn
-}
-
 resource "aws_cloudwatch_event_rule" "weekly_glue_trigger" {
   name                = "weekly-classicmodels-glue-trigger"
   description         = "Trigger semanal para rodar o Glue Job incremental (Task 2)"
@@ -144,7 +109,8 @@ resource "aws_cloudwatch_event_target" "glue_job_target" {
   rule      = aws_cloudwatch_event_rule.weekly_glue_trigger.name
   target_id = "TriggerGlueJob"
   arn       = aws_glue_job.etl_job.arn
-  role_arn  = aws_iam_role.eventbridge_glue_role.arn
+  # Fallback documentado: LabRole devido a restrições de IAM:CreateRole no Learner Lab
+  role_arn  = data.aws_iam_role.lab_role.arn
 }
 
 # --- GLUE CATALOG ---
