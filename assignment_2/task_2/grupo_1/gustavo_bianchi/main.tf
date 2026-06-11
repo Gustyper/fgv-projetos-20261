@@ -99,18 +99,15 @@ resource "local_file" "bucket_name_export" {
 
 # --- EVENTBRIDGE (Agendamento) ---
 
-resource "aws_cloudwatch_event_rule" "weekly_glue_trigger" {
-  name                = "weekly-classicmodels-glue-trigger"
-  description         = "Trigger semanal para rodar o Glue Job incremental (Task 2)"
-  schedule_expression = "cron(0 12 ? * MON *)"
-}
+# --- GLUE TRIGGER (Agendamento Nativo) ---
+resource "aws_glue_trigger" "weekly_trigger" {
+  name     = "weekly-classicmodels-glue-trigger"
+  schedule = "cron(0 12 ? * MON *)"
+  type     = "SCHEDULED"
 
-resource "aws_cloudwatch_event_target" "glue_job_target" {
-  rule      = aws_cloudwatch_event_rule.weekly_glue_trigger.name
-  target_id = "TriggerGlueJob"
-  arn       = aws_glue_job.etl_job.arn
-  # Fallback documentado: LabRole devido a restrições de IAM:CreateRole no Learner Lab
-  role_arn  = data.aws_iam_role.lab_role.arn
+  actions {
+    job_name = aws_glue_job.etl_job.name
+  }
 }
 
 # --- GLUE CATALOG ---
