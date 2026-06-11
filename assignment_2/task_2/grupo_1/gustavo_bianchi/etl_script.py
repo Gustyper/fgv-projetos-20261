@@ -9,7 +9,7 @@ from awsglue.job import Job
 from awsglue.utils import getResolvedOptions
 
 # Configuração do Job
-args = getResolvedOptions(sys.argv, ['JOB_NAME', 'TARGET_BUCKET', 'CONNECTION_NAME'])
+args = getResolvedOptions(sys.argv, ['JOB_NAME', 'TARGET_BUCKET', 'CONNECTION_NAME', 'DB_ENDPOINT', 'DB_PASSWORD'])
 sc = SparkContext()
 glueContext = GlueContext(sc)
 spark = glueContext.spark_session
@@ -159,24 +159,16 @@ except Exception as e:
 # 5. Atualizar Watermark no MySQL
 # ---------------------------------------------------------
 try:
-    glue_client = boto3.client('glue', region_name='us-east-1')
-    conn_info = glue_client.get_connection(Name=CONN_NAME)
-    props = conn_info['Connection']['ConnectionProperties']
+    db_endpoint = args['DB_ENDPOINT']
+    db_password = args['DB_PASSWORD']
     
-    jdbc_url = props.get('JDBC_CONNECTION_URL')
-    username = props.get('USERNAME')
-    password = props.get('PASSWORD')
-    
-    host_port_db = jdbc_url.split("jdbc:mysql://")[1]
-    host_port = host_port_db.split("/")[0]
-    host = host_port.split(":")[0]
-    db_name = host_port_db.split("/")[1]
+    host_port = db_endpoint.split(":")[0]
     
     conn = pymysql.connect(
-        host=host,
-        user=username,
-        password=password,
-        database=db_name,
+        host=host_port,
+        user='admin',
+        password=db_password,
+        database='classicmodels',
         cursorclass=pymysql.cursors.DictCursor
     )
     

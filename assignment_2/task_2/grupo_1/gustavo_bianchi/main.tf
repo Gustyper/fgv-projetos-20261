@@ -74,6 +74,8 @@ resource "aws_glue_job" "etl_job" {
     "--TempDir"                  = "s3://${aws_s3_bucket.datalake.bucket}/temp/"
     "--TARGET_BUCKET"            = aws_s3_bucket.datalake.bucket
     "--CONNECTION_NAME"          = aws_glue_connection.rds_conn.name
+    "--DB_ENDPOINT"              = data.aws_db_instance.rds.endpoint
+    "--DB_PASSWORD"              = var.db_password
     "--additional-python-modules"= "pymysql"
   }
 
