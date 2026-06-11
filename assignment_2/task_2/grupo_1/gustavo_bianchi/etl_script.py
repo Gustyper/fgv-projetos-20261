@@ -112,8 +112,8 @@ fact_orders = fact_df.select(
     col("order_date_key"),
     col("country_key"),
     col("quantityOrdered").alias("quantity_ordered"),
-    col("priceEach").alias("price_each"),
-    col("sales_amount"),
+    col("priceEach").cast("double").alias("price_each"),
+    col("sales_amount").cast("double"),
     year(col("orderDate")).alias("order_year"),
     month(col("orderDate")).alias("order_month")
 )
