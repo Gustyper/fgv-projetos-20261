@@ -88,7 +88,7 @@ dim_products = df_products.select(
 )
 
 dim_countries = df_customers.select("country").distinct() \
-    .withColumn("country_key", monotonically_increasing_id()) \
+    .withColumn("country_key", monotonically_increasing_id().cast("string")) \
     .withColumn("territory", col("country"))
 
 dim_dates = df_orders.select(col("orderDate").alias("full_date")).distinct() \
